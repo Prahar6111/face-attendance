@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Live Camera & Capture</title>
+</head>
+<body>
+    <h1>Live Face Recognition & Attendance</h1>
+    
+    <div>
+        <img src="{{ url_for('video_feed') }}" width="640" height="480">
+    </div>
+
+    <div style="margin-top: 20px;">
+        <button id="snap_btn" style="padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Capture Photo</button>
+        <div id="status" style="margin-top: 10px; font-weight: bold; color: green;"></div>
+    </div>
+
+    <br>
+    <p><a href="/">Back to Home</a></p>
+
+    <script>
+        document.getElementById('snap_btn').addEventListener('click', function() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerText = "Capturing snapshot...";
+
+            fetch('/api/capture-snapshot', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    statusDiv.innerText = data.message;
+                } else {
+                    statusDiv.innerText = "Error capturing photo.";
+                    statusDiv.style.color = "red";
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                statusDiv.innerText = "Failed to connect to server.";
+                statusDiv.style.color = "red";
+            });
+        });
+    </script>
+</body>
+</html>

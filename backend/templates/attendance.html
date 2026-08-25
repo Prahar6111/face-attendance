@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance Records</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 40px; }
+        table { width: 60%; margin: 20px auto; border-collapse: collapse; background: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: center; }
+        th { background-color: #28a745; color: white; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <h1>Student Attendance Records</h1>
+    
+    <table id="attendance_table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be populated via JavaScript -->
+        </tbody>
+    </table>
+
+    <p><a href="/">Back to Home</a></p>
+
+    <script>
+        // Fetch attendance records from Flask API
+        fetch('/api/attendance')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.querySelector('#attendance_table tbody');
+                tbody.innerHTML = ""; // Clear existing rows
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = "<tr><td colspan='3'>No attendance recorded yet.</td></tr>";
+                    return;
+                }
+
+                data.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${row.Name}</td>
+                        <td>${row.Date}</td>
+                        <td>${row.Time}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(err => console.error("Error loading attendance:", err));
+    </script>
+</body>
+</html>

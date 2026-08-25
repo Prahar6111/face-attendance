@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register Student</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        video, canvas { border: 2px solid #ccc; border-radius: 8px; margin-bottom: 10px; }
+        input, button { padding: 10px; font-size: 16px; margin: 5px; }
+        button { background-color: #28a745; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        button:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+    <h1>Register New Student</h1>
+    
+    <div>
+        <input type="text" id="student_name" placeholder="Enter Student Name" required>
+    </div>
+    
+    <!-- Live Webcam Preview for Registration -->
+    <div>
+        <video id="video" width="400" height="300" autoplay></video>
+    </div>
+
+    <div>
+        <button id="capture_btn">Capture & Register</button>
+    </div>
+
+    <!-- Hidden canvas to grab the frame snapshot -->
+    <canvas id="canvas" width="400" height="300" style="display:none;"></canvas>
+
+    <p><a href="/">Back to Home</a></p>
+
+    <script>
+        const video = document.getElementById('video');
+        
+        // Start the browser webcam for the registration preview
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.err("Error accessing webcam: ", err);
+                alert("Could not access the webcam. Check permissions.");
+            });
+
+        // Capture button action
+        document.getElementById('capture_btn').addEventListener('click', function() {
+            const name = document.getElementById('student_name').value.trim();
+            if (!name) {
+                alert("Please enter the student's name first!");
+                return;
+            }
+
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+            
+            // Draw the current video frame onto the hidden canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Convert canvas image into a Blob file format
+            canvas.toBlob(function(blob) {
+                const formData = new FormData();
+                formData.append('name', name);
+                formData.append('image', blob, `${name}.jpg`);
+
+                // Send the captured image to Flask backend
+                fetch('/api/register', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert(data.message);
+                        // Optional: trigger encoding rebuild or clear input
+                    } else {
+                        alert("Error: " + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("Failed to upload image.");
+                });
+            }, 'image/jpeg');
+        });
+    </script>
+</body>
+</html>
